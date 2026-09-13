@@ -315,6 +315,10 @@ class StockDomainTest {
         assertTrue(MarketDataEngine.stockNameCandidates("对比三一重工和紫金矿业").containsAll(listOf("三一重工", "紫金矿业")))
         assertEquals(listOf("美团"), MarketDataEngine.stockNameCandidates("分析一下美团"))
         assertEquals(listOf("美图公司"), MarketDataEngine.stockNameCandidates("查询美图公司"))
+        assertEquals(
+            listOf("美图公司"),
+            MarketDataEngine.stockNameCandidates("分析美图公司最近20日的趋势、风险和关键观察点。")
+        )
         assertEquals("美团", AIChatEngine.normalizedStockName("美团-W"))
         assertEquals("### 美团行情\n现价数据已载入", AIChatEngine.stripUnnecessaryApology("### 美团行情\n非常抱歉，现价数据已载入"))
     }
@@ -347,5 +351,45 @@ class StockDomainTest {
             listOf("01357"),
             AIChatEngine.marketStocksFor("查询美图公司").map { it.code }
         )
+    }
+
+    @Test
+    fun genericQuestionDoesNotInheritUnrelatedStockContext() {
+        val history = "用户：分析平安银行\n助手：平安银行短期震荡"
+
+        assertTrue(AIChatEngine.marketStocksFor("随便返回一点东西", history).isEmpty())
+        assertEquals("", AIChatEngine.buildMarketContext("随便返回一点东西", history))
+
+        val fallback = AIChatEngine.localFallback("随便返回一点东西", history, "network error")
+        assertEquals("", fallback.stockCode)
+        assertFalse(fallback.showStockCard)
+        assertFalse(fallback.markdown.contains("条件观察"))
+        assertTrue(fallback.markdown.contains("随便返回一点东西"))
+    }
+
+    @Test
+    fun explicitFollowUpCanReuseTheMostRecentStockContext() {
+        val history = "用户：分析贵州茅台\n助手：贵州茅台震荡\n用户：分析平安银行\n助手：平安银行承压"
+
+        assertEquals(
+            listOf("000001"),
+            AIChatEngine.marketStocksFor("它为什么下跌？", history).map { it.code }
+        )
+    }
+
+    @Test
+    fun genericOnlineResponseCannotForceAnUnrelatedStockCard() {
+        val response = AIChatEngine.parseOnlineResponse(
+            JSONObject().apply {
+                put("markdown", "直接回答普通问题")
+                put("stockCode", "000001")
+                put("showStockCard", true)
+            },
+            "随便返回一点东西",
+            history = "用户：分析平安银行"
+        )
+
+        assertEquals("", response.stockCode)
+        assertFalse(response.showStockCard)
     }
 }

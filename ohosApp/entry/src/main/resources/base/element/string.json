@@ -2,15 +2,15 @@
   "string": [
     {
       "name": "module_desc",
-      "value": "module description"
+      "value": "AI 股票投研助手"
     },
     {
       "name": "EntryAbility_desc",
-      "value": "description"
+      "value": "AI 股票投研助手"
     },
     {
       "name": "EntryAbility_label",
-      "value": "kuiklydemo"
+      "value": "知势"
     }
   ]
 }

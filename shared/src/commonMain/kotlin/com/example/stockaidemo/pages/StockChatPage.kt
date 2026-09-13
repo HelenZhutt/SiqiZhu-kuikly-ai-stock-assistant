@@ -118,13 +118,13 @@ internal class StockChatPage : BasePager() {
                 }
                 View {
                     attr { flex(1f); flexDirectionColumn(); alignItemsCenter() }
-                    Text { attr { text("AI 投研助手"); fontSize(17f); fontWeightBold(); color(Color(0xFF0F172A)) } }
+                    Text { attr { text("知势"); fontSize(17f); fontWeightBold(); color(Color(0xFF0F172A)) } }
                     Text {
                         attr {
                             text(when (ctx.engineIssue) {
-                                "quota" -> "● AI额度受限 · ${ctx.marketStatus}"
-                                "request" -> "● AI请求失败 · ${ctx.marketStatus}"
-                                else -> if (ctx.engineOnline) "● AI在线 · ${ctx.marketStatus}" else "● AI离线 · ${ctx.marketStatus}"
+                                "quota" -> "AI 股票投研助手 · 额度受限"
+                                "request" -> "AI 股票投研助手 · 请求失败"
+                                else -> if (ctx.engineOnline) "AI 股票投研助手 · 在线" else "AI 股票投研助手 · 离线"
                             })
                             fontSize(10f); marginTop(2f)
                             color(when (ctx.engineIssue) {
@@ -675,7 +675,7 @@ internal class StockChatPage : BasePager() {
     }
 
     private fun addWelcomeMessage() {
-        messages.add(ChatMessage(id = nextMessageId++, role = "assistant", content = "### 你好，我是 AI 投研助手\n我会结合真实行情、20日走势和近期事件的市场反应回答，也可以并排比较股票或生成风险排行。", source = "在线智能分析"))
+        messages.add(ChatMessage(id = nextMessageId++, role = "assistant", content = "### 你好，我是知势\n你的 AI 股票投研助手。我会结合真实行情、20日走势和近期事件的市场反应回答，也可以并排比较股票或生成风险排行。", source = "在线智能分析"))
     }
 
     private fun startNewConversation() {

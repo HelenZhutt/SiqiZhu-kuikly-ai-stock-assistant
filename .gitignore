@@ -21,6 +21,7 @@ Kotlin-js-store
 .env.*
 !.env.example
 /work
+/.hvigor/
 
 ## Various settings
 *.pbxuser

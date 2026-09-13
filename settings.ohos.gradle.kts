@@ -26,6 +26,5 @@ rootProject.name = "StockAIDemo2"
 val buildFileName = "build.ohos.gradle.kts"
 rootProject.buildFileName = buildFileName
 
-include(":androidApp")
 include(":shared")
 project(":shared").buildFileName = buildFileName

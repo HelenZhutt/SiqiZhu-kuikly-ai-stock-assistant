@@ -43,7 +43,7 @@ object AIChatEngine {
             timeout = 12,
             responseCallback = { data: JSONObject, success: Boolean, networkError: String, _ ->
                 val onlineResult = if (success && data.optBoolean("ok")) {
-                    parseOnlineResponse(data, question)
+                    parseOnlineResponse(data, question, history = history)
                 } else {
                     null
                 }
@@ -106,7 +106,7 @@ object AIChatEngine {
                 if (isStreamComplete(data)) {
                     val result = data.optJSONObject("result")
                     if (result != null && result.optBoolean("ok") && data.optString("error").isEmpty()) {
-                        callback(parseOnlineResponse(result, question, streamed = true))
+                        callback(parseOnlineResponse(result, question, streamed = true, history = history))
                     } else {
                         callback(localFallback(question, history, data.optString("error")))
                     }
@@ -127,6 +127,10 @@ object AIChatEngine {
 
     private fun buildRequestBody(question: String, history: String): JSONObject {
         val contextStocks = marketStocksFor(question, history)
+        // Explicit stock questions must stand on their own. Keeping unrelated
+        // earlier tickers in the model transcript can make the prose describe
+        // the previous stock even though the structured card uses the new one.
+        val promptHistory = if (namedStocks(question).isNotEmpty() && !isContextualFollowUp(question)) "" else history
         val useNewsGrounding = contextStocks.size == 1 && shouldUseNewsGrounding(question)
         val priceHistory = JSONArray()
         contextStocks.forEach { stock ->
@@ -145,8 +149,9 @@ object AIChatEngine {
         }
         return JSONObject().apply {
             put("question", question)
-            put("history", history)
+            put("history", promptHistory)
             put("marketContext", buildMarketContext(question, history))
+            put("hasMarketContext", contextStocks.isNotEmpty())
             put("useNewsGrounding", useNewsGrounding)
             put("newsCompanies", if (useNewsGrounding) contextStocks.joinToString("、") { it.name } else "")
             put("priceHistory", priceHistory)
@@ -161,10 +166,11 @@ object AIChatEngine {
     internal fun parseOnlineResponse(
         data: JSONObject,
         question: String,
-        streamed: Boolean = false
+        streamed: Boolean = false,
+        history: String = ""
     ): ChatAIResponse {
         val namedStocks = namedStocks(question)
-        val comparisonIntent = isComparisonIntent(question)
+        val relevantStocks = marketStocksFor(question, history)
         val multiStockComparison = namedStocks.size >= 2
         val comparisonCodes = if (multiStockComparison) {
             // The model may omit later symbols. The deterministic entity resolver
@@ -173,8 +179,11 @@ object AIChatEngine {
         } else data.optString("comparisonCodes").ifEmpty {
             if (namedStocks.size >= 2) namedStocks.joinToString(",") { it.code } else ""
         }
-        val resolvedStockCode = data.optString("stockCode").ifEmpty {
-            if (namedStocks.size == 1) namedStocks.first().code else ""
+        val modelStockCode = data.optString("stockCode")
+        val resolvedStockCode = when {
+            namedStocks.size == 1 -> namedStocks.first().code
+            relevantStocks.any { it.code == modelStockCode } -> modelStockCode
+            else -> ""
         }
         // Two or more explicitly named stocks always use the unified comparison
         // pipeline. Risk wording changes the conclusion, not the card type.
@@ -193,7 +202,8 @@ object AIChatEngine {
             insightSummary = data.optString("insightSummary"),
             action = data.optString("action"),
             riskLevel = data.optString("riskLevel"),
-            showStockCard = data.optBoolean("showStockCard") || explicitlyNamedStockCount(question) == 1,
+            showStockCard = resolvedStockCode.isNotEmpty() && relevantStocks.size == 1 &&
+                (data.optBoolean("showStockCard") || namedStocks.size == 1 || isContextualFollowUp(question)),
             showComparisonCard = multiStockComparison || (!riskRanking &&
                 data.optBoolean("showComparisonCard") && comparisonCodes.isNotEmpty()),
             showRiskRankingCard = riskRanking
@@ -233,10 +243,25 @@ object AIChatEngine {
         if (question.contains("自选") || isRiskRankingIntent(question)) {
             return StockRepository.getStockList()
         }
+        if (!isContextualFollowUp(question)) return emptyList()
         val referencedByHistory = StockRepository.getAllKnownStocks().filter { stock ->
             history.contains(stock.name) || history.contains(stock.code) || history.contains(normalizedStockName(stock.name))
+        }.sortedByDescending { stock ->
+            maxOf(
+                history.lastIndexOf(stock.name),
+                history.lastIndexOf(stock.code),
+                history.lastIndexOf(normalizedStockName(stock.name))
+            )
         }
-        return referencedByHistory.ifEmpty { StockRepository.getStockList() }
+        val pluralReference = listOf("它们", "这些", "两只", "几只", "各自", "之间").any(question::contains)
+        return if (pluralReference || isComparisonIntent(question)) referencedByHistory else referencedByHistory.take(1)
+    }
+
+    internal fun isContextualFollowUp(question: String): Boolean {
+        val normalized = question.trim().lowercase()
+        if (normalized in listOf("为什么", "为什么呢", "依据呢", "继续", "继续说", "再说说")) return true
+        if (listOf("它", "它们", "这只", "这些", "该股", "该公司", "刚才", "上一只", "上面").any(normalized::contains)) return true
+        return normalized.startsWith("那") && listOf("走势", "风险", "原因", "支撑", "压力", "涨", "跌", "呢").any(normalized::contains)
     }
 
     internal fun explicitlyNamedStockCount(question: String): Int = namedStocks(question).size
@@ -330,15 +355,13 @@ object AIChatEngine {
         val compared = namedStocks(question)
         val multiStockComparison = compared.size >= 2
         val riskRanking = isRiskRankingIntent(question) && !multiStockComparison
-        val explicitStock = StockRepository.getAllKnownStocks().firstOrNull {
-            question.contains(it.name) || question.contains(it.code)
-        }
-        val stock = explicitStock ?: StockRepository.getAllKnownStocks().firstOrNull {
-            history.contains(it.name) || history.contains(it.code)
-        }
+        val explicitStock = compared.singleOrNull()
+        val stock = explicitStock ?: marketStocksFor(question, history).singleOrNull()
         if (stock == null) {
+            val compactQuestion = question.replace("\n", " ").take(48)
             return ChatAIResponse(
-                markdown = "### 我能帮你什么\n- 分析 Demo 中的个股走势和风险\n- 对比多只股票的当日表现\n- 解释上一轮判断的依据\n请告诉我股票名称或代码。",
+                markdown = "我读到的是：“$compactQuestion”。这条问题没有指向具体股票，所以不会擅自套用其他股票的行情。" +
+                    "你可以直接说明希望了解的内容；如果要分析股票，请补充名称或代码。",
                 source = fallbackSource,
                 stockCode = "",
                 comparisonCodes = compared.joinToString(",") { it.code },

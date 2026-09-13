@@ -100,12 +100,23 @@ internal class StockListPage : BasePager() {
                     paddingRight(16f)
                     backgroundColor(Color.WHITE)
                 }
-                Text {
-                    attr {
-                        text("行情 · 自选")
-                        fontSize(18f)
-                        fontWeightBold()
-                        color(Color(0xFF1A1A1A))
+                View {
+                    attr { flexDirectionColumn(); justifyContentCenter() }
+                    Text {
+                        attr {
+                            text("知势")
+                            fontSize(18f)
+                            fontWeightBold()
+                            color(Color(0xFF1A1A1A))
+                        }
+                    }
+                    Text {
+                        attr {
+                            text("AI 股票投研助手")
+                            fontSize(10f)
+                            marginTop(2f)
+                            color(Color(0xFF64748B))
+                        }
                     }
                 }
                 View {
@@ -376,7 +387,13 @@ internal class StockListPage : BasePager() {
             // 行情列表
             List {
                 attr {
+                    // Keep the list as the page's vertical scroll viewport.  The
+                    // extra bottom inset prevents the last watchlist row from
+                    // being hidden under the home indicator on iOS.
                     flex(1f)
+                    flexDirectionColumn()
+                    scrollEnable(true)
+                    paddingBottom(96f)
                 }
 
                 vfor({ ctx.displayedStocks }) { stock ->

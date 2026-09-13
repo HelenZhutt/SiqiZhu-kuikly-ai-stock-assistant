@@ -1,6 +1,6 @@
-# Stock AI Demo — Kuikly 跨端智能投研原型
+# 知势 — AI 股票投研助手
 
-这是一个基于 Tencent Kuikly 的跨端股票应用 Demo，同一工程内完整实现两个比赛任务：
+知势是一个基于 Tencent Kuikly 的跨端 AI 股票投研助手，同一工程内完整实现两个比赛任务：
 
 - **Task 1：AI 股票行情原型** — A股/港股名称、代码及拼音搜索，自选行情、真实行情刷新、20 日收盘折线、个股详情、Gemini 结构化解读、离线兜底。
 - **Task 2：AI 股票问答** — 多轮对话、本地历史恢复、流式输出、Markdown 渲染、单股洞察、双股量化对比与风险排行卡片、详情页承接。
@@ -171,6 +171,23 @@ xcodebuild -workspace iosApp/iosApp.xcworkspace \
 本次已在 iPhone 16 Pro / iOS 18.5 Simulator 完成构建与模拟器验证；演示视频待最终版本确认后录制。
 
 iOS 容器只忽略设备边框安全区、不忽略键盘安全区。键盘弹出时 Kuikly 根视图会随可用高度缩小，因此问答输入栏会保持在键盘上方；无需页面手写一个固定键盘高度。
+
+## HarmonyOS 演示
+
+鸿蒙工程位于 `ohosApp`，首屏同样启动共享 Kuikly 页面 `StockList`。鸿蒙使用独立的 `settings.ohos.gradle.kts` 和 `shared/build.ohos.gradle.kts`，不会替换 Android/iOS 的构建配置。
+
+1. 在 DevEco Studio 中打开 `ohosApp`，等待 ohpm/Hvigor 同步完成。
+2. 在 `Project Structure > Signing Configs` 配置自动签名。
+3. 启动 HarmonyOS 模拟器或连接设备，运行 `entry`。
+
+也可在项目根目录构建并运行：
+
+```bash
+./ohosApp/runOhosApp.sh        # 构建；有设备和签名时自动安装运行
+./ohosApp/runOhosApp.sh build  # 只构建 HAP
+```
+
+脚本默认识别 `/Applications/DevEco-Studio.app`；若安装在其他位置，可通过 `DEVECO_STUDIO_HOME` 指向应用内的 `Contents` 目录。未配置签名时仍会生成 `ohosApp/entry/build/default/outputs/default/entry-default-unsigned.hap`，但不能直接安装到设备。
 
 ## 推荐比赛演示路线（约 90 秒）
 

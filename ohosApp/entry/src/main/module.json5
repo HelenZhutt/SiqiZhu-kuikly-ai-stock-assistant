@@ -40,5 +40,10 @@
         "value": "true",
       },
     ],
+    "requestPermissions": [
+      {
+        "name": "ohos.permission.INTERNET"
+      }
+    ]
   }
 }
