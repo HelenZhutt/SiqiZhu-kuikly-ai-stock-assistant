@@ -5,6 +5,17 @@
 - **Task 1：AI 股票行情原型** — A股/港股名称、代码及拼音搜索，自选行情、真实行情刷新、20 日收盘折线、个股详情、Gemini 结构化解读、离线兜底。
 - **Task 2：AI 股票问答** — 多轮对话、本地历史恢复、流式输出、Markdown 渲染、单股洞察、双股量化对比与风险排行卡片、详情页承接。
 
+## OpenSourceTalent 任务汇总
+
+本次完成 **Task 1、Task 2 和 Task 3**。
+
+| Task | 项目 | 代码仓库 |
+| --- | --- | --- |
+| Task 1 & 2 | 知势 — AI 股票投研助手 | 当前仓库 |
+| Task 3 | DSH App · AI Conversation Experience Enhancement | https://github.com/HelenZhutt/deepseek-harness-mobile |
+
+> **Task 3 使用独立仓库实现。** 该项目基于 Kuikly 开发 DSH 移动端，完成了流式消息、工具交互、图片附件、Markdown / LaTeX 渲染、复制与导出、会话管理、主题、插件、日志以及异常重连等功能。完整代码、运行说明及实现细节请查看上方 Task 3 仓库。
+
 ## 亮点
 
 1. **完整业务闭环**：行情列表 → 个股详情 → AI 解读 → 继续追问；聊天中的股票卡片也可反向进入详情。
