@@ -238,6 +238,19 @@ class StockDomainTest {
     }
 
     @Test
+    fun demoSnapshotIncludesChartableHistoryWithoutLiveQuotes() {
+        val stocks = StockRepository.getStockList()
+        assertEquals(4, stocks.size)
+        assertTrue(stocks.all { it.history.size >= 20 })
+        assertTrue(stocks.all { kotlin.math.abs(it.history.last().close - it.price) < 0.02 })
+        val cached = MarketDataEngine.cachedStocksForSymbols(
+            listOf("sz000001", "sh600519", "sz300750", "hk00700"),
+            requireHistory = true
+        )
+        assertEquals(listOf("000001", "600519", "300750", "00700"), cached.map { it.code })
+    }
+
+    @Test
     fun historicalWindowUsesNewestAvailablePoints() {
         val history = (1..20).map { PricePoint("09-${it.toString().padStart(2, '0')}", it.toDouble()) }
         val sample = stock().copy(history = history)

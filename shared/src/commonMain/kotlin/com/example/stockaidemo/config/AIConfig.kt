@@ -3,9 +3,9 @@ package com.example.stockaidemo.config
 import com.tencent.kuikly.core.utils.PlatformUtils
 
 object AIConfig {
-    /** Android Emulator reaches the host Mac through 10.0.2.2; iOS Simulator shares localhost. */
+    /** Android Emulator uses 10.0.2.2; iOS Simulator and HarmonyOS use localhost (hdc rport on OHOS). */
     private val host: String
-        get() = if (PlatformUtils.isIOS()) "localhost" else "10.0.2.2"
+        get() = if (PlatformUtils.isAndroid()) "10.0.2.2" else "localhost"
 
     val proxyUrl: String
         get() = "http://$host:8787/analyze"

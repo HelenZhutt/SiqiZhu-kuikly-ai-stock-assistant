@@ -161,20 +161,33 @@ object MarketDataEngine {
             return
         }
 
-        fun matches(stock: Stock, symbol: String): Boolean {
-            return stock.marketSymbol.equals(symbol, ignoreCase = true) ||
-                stock.code == symbol.drop(2)
+        fun isReady(stock: Stock, symbol: String): Boolean {
+            return matchesSymbol(stock, symbol) && (!requireHistory || stock.history.size >= 5)
         }
 
-        fun isReady(stock: Stock, symbol: String): Boolean {
-            return matches(stock, symbol) && (!requireHistory || stock.history.size >= 5)
+        fun ordered(available: List<Stock>): List<Stock> {
+            return expected.mapNotNull { symbol -> available.firstOrNull { matchesSymbol(it, symbol) } }
+        }
+
+        fun fillFromLocalSnapshot(merged: MutableList<Stock>) {
+            cachedStocksForSymbols(expected, requireHistory).forEach { cached ->
+                val existingIndex = merged.indexOfFirst { it.code == cached.code }
+                if (existingIndex < 0) merged.add(cached)
+                else if (merged[existingIndex].history.size < cached.history.size) merged[existingIndex] = cached
+            }
         }
 
         loadSymbols(networkModule, expected) { firstStocks, firstError ->
             val merged = firstStocks.orEmpty().distinctBy { it.code }.toMutableList()
+            fillFromLocalSnapshot(merged)
             val missing = expected.filter { symbol -> merged.none { isReady(it, symbol) } }
             if (missing.isEmpty()) {
-                callback(expected.mapNotNull { symbol -> merged.firstOrNull { matches(it, symbol) } }, "")
+                callback(ordered(merged), "")
+                return@loadSymbols
+            }
+            if (firstStocks == null) {
+                val codes = missing.joinToString("、") { it.drop(2) }
+                callback(merged, "$codes 行情暂时获取失败${if (firstError.isEmpty()) "" else "：$firstError"}")
                 return@loadSymbols
             }
             loadSymbols(networkModule, missing) { retriedStocks, retryError ->
@@ -183,14 +196,32 @@ object MarketDataEngine {
                     if (existingIndex < 0) merged.add(retried)
                     else if (retried.history.size >= merged[existingIndex].history.size) merged[existingIndex] = retried
                 }
+                fillFromLocalSnapshot(merged)
                 val stillMissing = expected.filter { symbol -> merged.none { isReady(it, symbol) } }
                 if (stillMissing.isNotEmpty()) {
                     val codes = stillMissing.joinToString("、") { it.drop(2) }
                     val detail = retryError.ifEmpty { firstError }
                     callback(merged, "$codes 行情暂时获取失败，已自动重试${if (detail.isEmpty()) "" else "：$detail"}")
                 } else {
-                    callback(expected.mapNotNull { symbol -> merged.firstOrNull { matches(it, symbol) } }, "")
+                    callback(ordered(merged), "")
                 }
+            }
+        }
+    }
+
+    internal fun matchesSymbol(stock: Stock, symbol: String): Boolean {
+        return stock.marketSymbol.equals(symbol, ignoreCase = true) ||
+            stock.code == symbol.drop(2)
+    }
+
+    /** Offline charts/cards reuse the demo snapshot when the local proxy is down. */
+    internal fun cachedStocksForSymbols(
+        symbols: List<String>,
+        requireHistory: Boolean = false
+    ): List<Stock> {
+        return symbols.filter { isSupportedSymbol(it) }.distinct().mapNotNull { symbol ->
+            StockRepository.getAllKnownStocks().firstOrNull { stock ->
+                matchesSymbol(stock, symbol) && (!requireHistory || stock.history.size >= 5)
             }
         }
     }
