@@ -9,14 +9,14 @@
 
 本次完成 **Task 1、Task 2 和 Task 3**。
 
-| Task | 项目 | 代码仓库 |
-| --- | --- | --- |
-| Task 1 & 2 | 知势 — AI 股票投研助手 | 当前仓库 |
-| Task 3 | DSH App · AI Conversation Experience Enhancement | https://github.com/HelenZhutt/deepseek-harness-mobile |
+| Task | 项目 | 代码仓库 | 演示视频 |
+| --- | --- | --- | --- |
+| Task 1 & 2 | 知势 — AI 股票投研助手 | 当前仓库 | [Google Drive](https://drive.google.com/file/d/1jzFN96QTVHcxeDyUoWzP9tLJ4luIMqTJ/view) |
+| Task 3 | DSH App · AI Conversation Experience Enhancement | https://github.com/HelenZhutt/deepseek-harness-mobile | [Google Drive](https://drive.google.com/file/d/1ZB5aRcNx4s-ejV02EoQAS8NjLLWPWhO3/view) |
 
 > **Task 3 使用独立仓库实现。** 该项目基于 Kuikly 开发 DSH 移动端，完成了流式消息、工具交互、图片附件、Markdown / LaTeX 渲染、复制与导出、会话管理、主题、插件、日志以及异常重连等功能。完整代码、运行说明及实现细节请查看上方 Task 3 仓库。
 > 
-> 🎥 **Task 1、Task 2 和 Task 3 的演示视频均已通过邮件发送至 `elixxli@tencent.com`，供评审查看。** 邮件中的 Task 1 / Task 2 视频为 Android 与 iOS 演示。**HarmonyOS（鸿蒙）已在本仓库 `ohosApp` 完成代码实现，但没有对应演示视频**：作者人在美国，DevEco / 鸿蒙模拟器与设备环境目前主要面向中国大陆账号与网络，本地无法完成真机或官方模拟器录屏。评委如在中国大陆环境，可按下方「HarmonyOS 演示」运行同一套 Kuikly 页面。
+> 🎥 **演示视频：** [Task 1 & 2](https://drive.google.com/file/d/1jzFN96QTVHcxeDyUoWzP9tLJ4luIMqTJ/view) · [Task 3](https://drive.google.com/file/d/1ZB5aRcNx4s-ejV02EoQAS8NjLLWPWhO3/view)。**同一份视频同时也已通过邮件发送至 `elixxli@tencent.com`。** Task 1 / Task 2 视频为 Android 与 iOS 演示。**HarmonyOS（鸿蒙）已在本仓库 `ohosApp` 完成代码实现，但没有对应演示视频**：作者人在美国，DevEco / 鸿蒙模拟器与设备环境目前主要面向中国大陆账号与网络，本地无法完成真机或官方模拟器录屏。评委如在中国大陆环境，可按下方「HarmonyOS 演示」运行同一套 Kuikly 页面。
 
 ## 亮点
 1. **完整业务闭环**：行情列表 → 个股详情 → AI 解读 → 继续追问；聊天中的股票卡片也可反向进入详情。
@@ -194,7 +194,7 @@ xcodebuild -workspace iosApp/iosApp.xcworkspace \
   -destination 'platform=iOS Simulator,name=iPhone 16 Pro' build
 ```
 
-本次已在 iPhone 16 Pro / iOS 18.5 Simulator 完成构建与模拟器验证；演示视频待最终版本确认后录制。
+本次已在 iPhone 16 Pro / iOS 18.5 Simulator 完成构建与模拟器验证。Android / iOS 演示见上方 Google Drive 链接；同一份视频也已邮件发送。
 
 iOS 容器只忽略设备边框安全区、不忽略键盘安全区。键盘弹出时 Kuikly 根视图会随可用高度缩小，因此问答输入栏会保持在键盘上方；无需页面手写一个固定键盘高度。
 
