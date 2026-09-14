@@ -15,6 +15,7 @@
 | Task 3 | DSH App · AI Conversation Experience Enhancement | https://github.com/HelenZhutt/deepseek-harness-mobile |
 
 > **Task 3 使用独立仓库实现。** 该项目基于 Kuikly 开发 DSH 移动端，完成了流式消息、工具交互、图片附件、Markdown / LaTeX 渲染、复制与导出、会话管理、主题、插件、日志以及异常重连等功能。完整代码、运行说明及实现细节请查看上方 Task 3 仓库。
+> > 🎥 **Task 1、Task 2 和 Task 3 的演示视频均已通过邮件发送至 `elixxli@tencent.com`，供评审查看。**
 
 ## 亮点
 
