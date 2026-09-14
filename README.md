@@ -15,10 +15,9 @@
 | Task 3 | DSH App · AI Conversation Experience Enhancement | https://github.com/HelenZhutt/deepseek-harness-mobile |
 
 > **Task 3 使用独立仓库实现。** 该项目基于 Kuikly 开发 DSH 移动端，完成了流式消息、工具交互、图片附件、Markdown / LaTeX 渲染、复制与导出、会话管理、主题、插件、日志以及异常重连等功能。完整代码、运行说明及实现细节请查看上方 Task 3 仓库。
-> > 🎥 **Task 1、Task 2 和 Task 3 的演示视频均已通过邮件发送至 `elixxli@tencent.com`，供评审查看。**
+> 🎥 **Task 1、Task 2 和 Task 3 的演示视频均已通过邮件发送至 `elixxli@tencent.com`，供评审查看。**
 
 ## 亮点
-
 1. **完整业务闭环**：行情列表 → 个股详情 → AI 解读 → 继续追问；聊天中的股票卡片也可反向进入详情。
 2. **真实 AI 接入**：Groq Compound（或可切换的 Gemini/OpenAI）密钥只保存在本机代理进程，不写入 App 或仓库；代理强制返回结构化 JSON，页面展示稳定可控。
 3. **可靠演示**：网络、额度或 API 异常时自动切换本地知识库，界面会明确显示“离线兜底”，不会无限加载或伪装在线结果。
